@@ -94,6 +94,22 @@ button { width:100%; padding:10px; margin:5px 0; background:green; color:white; 
 
 </div>
 
+<div class="box">
+<h3>Driver Report</h3>
+
+<select id="driverFilter">
+<option>Saqlain</option>
+<option>Mudassar</option>
+<option>Shujaat</option>
+<option>Other</option>
+</select>
+
+<button onclick="driverReport()">👤 Show Driver Report</button>
+
+<p id="driverResult"></p>
+
+</div>
+
 <script>
 
 let db = JSON.parse(localStorage.getItem("taxiData")) || [];
@@ -190,8 +206,27 @@ let blob = new Blob([text]);
 let a = document.createElement("a");
 
 a.href = URL.createObjectURL(blob);
-a.download = "monthly.txt";
+a.download = "monthly_report.txt";
 a.click();
+}
+
+function driverReport(){
+
+let driver = document.getElementById("driverFilter").value;
+
+let total=0, cash=0, card=0;
+
+db.forEach(e=>{
+if(e.driver === driver){
+total+=e.totalWork;
+cash+=e.totalCash;
+card+=e.totalCard;
+}
+});
+
+document.getElementById("driverResult").innerHTML =
+"Total Work: €"+total+"<br>Cash: €"+cash+"<br>Card: €"+card;
+
 }
 
 </script>
