@@ -4,21 +4,20 @@
 <title>Taxi Pro System</title>
 
 <style>
-body { font-family: Arial; background:#f0f0f0; }
-input { padding:8px; margin:5px; width:90%; }
-button { padding:10px; background:green; color:white; border:none; margin:5px;}
-.box { background:white; margin:10px; padding:10px; border-radius:10px; }
+body { font-family: Arial; background:#f2f2f2; padding:10px; }
+.box { background:white; padding:15px; margin:10px 0; border-radius:10px; }
+input, select, button { width:100%; padding:10px; margin:5px 0; }
+button { background:green; color:white; border:none; }
 </style>
 
 </head>
 
 <body>
 
-<h2>🚖 Taxi Pro System</h2>
+<h2>🚕 Taxi Pro System</h2>
 
 <div class="box">
 <h3>Driver & Date</h3>
-
 <select id="driver">
 <option>Saqlain</option>
 <option>Mudassar</option>
@@ -31,39 +30,38 @@ button { padding:10px; background:green; color:white; border:none; margin:5px;}
 
 <div class="box">
 <h3>Taximeter</h3>
-<input id="tmCash" placeholder="Cash €">
-<input id="tmCard" placeholder="Card €">
+<input id="taxiCash" placeholder="Cash">
+<input id="taxiCard" placeholder="Card">
 </div>
 
 <div class="box">
 <h3>Uber</h3>
-<input id="uberCard" placeholder="Card €">
+<input id="uber" placeholder="Total">
 </div>
 
 <div class="box">
 <h3>Cabify</h3>
-<input id="cabCash" placeholder="Cash €">
-<input id="cabCard" placeholder="Card €">
+<input id="cabifyCash" placeholder="Cash">
+<input id="cabifyCard" placeholder="Card">
 </div>
 
 <div class="box">
 <h3>Free Now</h3>
-<input id="fnCash" placeholder="Cash €">
-<input id="fnCard" placeholder="Card €">
+<input id="freeCash" placeholder="Cash">
+<input id="freeCard" placeholder="Card">
 </div>
 
 <div class="box">
 <h3>Fuel</h3>
-<input id="fuel" placeholder="Fuel €">
+<input id="fuel" placeholder="Fuel Cost">
 <select id="fuelType">
-<option value="Card">Company Card</option>
-<option value="Cash">Driver Cash</option>
+<option>Company Card</option>
+<option>Driver Cash</option>
 </select>
 </div>
 
 <button onclick="saveEntry()">💾 Save Entry</button>
-<button onclick="calculate()">📊 Calculate</button>
-<button onclick="monthlyReport()">📅 Monthly Report</button>
+<button onclick="calculate()">📊 Calculate Total</button>
 
 <div class="box">
 <h3>Result</h3>
@@ -72,92 +70,32 @@ button { padding:10px; background:green; color:white; border:none; margin:5px;}
 
 <div class="box">
 <h3>Monthly Report</h3>
-<p id="month"></p>
+
+<select id="monthSelect">
+<option value="0">January</option>
+<option value="1">February</option>
+<option value="2">March</option>
+<option value="3">April</option>
+<option value="4">May</option>
+<option value="5">June</option>
+<option value="6">July</option>
+<option value="7">August</option>
+<option value="8">September</option>
+<option value="9">October</option>
+<option value="10">November</option>
+<option value="11">December</option>
+</select>
+
+<button onclick="filterMonthly()">📅 Show Monthly</button>
+<button onclick="downloadMonthly()">⬇ Download</button>
+
+<p id="monthly"></p>
 </div>
 
 <script>
 
 let data = JSON.parse(localStorage.getItem("taxiData")) || [];
 
-function getValues(){
-return {
-driver: document.getElementById("driver").value,
-date: document.getElementById("date").value,
-tmCash: Number(document.getElementById("tmCash").value)||0,
-tmCard: Number(document.getElementById("tmCard").value)||0,
-uber: Number(document.getElementById("uberCard").value)||0,
-cabCash: Number(document.getElementById("cabCash").value)||0,
-cabCard: Number(document.getElementById("cabCard").value)||0,
-fnCash: Number(document.getElementById("fnCash").value)||0,
-fnCard: Number(document.getElementById("fnCard").value)||0,
-fuel: Number(document.getElementById("fuel").value)||0,
-fuelType: document.getElementById("fuelType").value
-};
-}
+function saveEntry() {
 
-function calculate(){
-let v = getValues();
-
-let totalCash = v.tmCash + v.cabCash + v.fnCash;
-let totalCard = v.tmCard + v.uber + v.cabCard + v.fnCard;
-let totalWork = totalCash + totalCard;
-
-let driverShare = totalWork * 0.5;
-let companyPay = driverShare - totalCash;
-
-if(v.fuelType === "Card"){
-companyPay -= v.fuel;
-}else{
-driverShare -= v.fuel;
-}
-
-document.getElementById("result").innerHTML = `
-Total Work: €${totalWork}<br>
-Cash: €${totalCash}<br>
-Card: €${totalCard}<br><br>
-Driver Share: €${driverShare}<br>
-Company Pays: €${companyPay}
-`;
-}
-
-function saveEntry(){
-let v = getValues();
-data.push(v);
-localStorage.setItem("taxiData", JSON.stringify(data));
-alert("Saved!");
-}
-
-function monthlyReport(){
-
-let now = new Date();
-let month = now.getMonth();
-
-let totalWork = 0;
-let totalCash = 0;
-let totalCard = 0;
-
-data.forEach(e=>{
-let d = new Date(e.date);
-
-if(d.getMonth() === month){
-
-let cash = e.tmCash + e.cabCash + e.fnCash;
-let card = e.tmCard + e.uber + e.cabCard + e.fnCard;
-
-totalCash += cash;
-totalCard += card;
-totalWork += cash + card;
-}
-});
-
-document.getElementById("month").innerHTML = `
-Month Total Work: €${totalWork}<br>
-Total Cash: €${totalCash}<br>
-Total Card: €${totalCard}
-`;
-}
-
-</script>
-
-</body>
-</html>
+let
