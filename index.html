@@ -43,8 +43,9 @@
 <br>
 
 <input type="number" id="work" placeholder="Total Work €">
-<input type="number" id="cash" placeholder="Cash €">
-<input type="number" id="fuel" placeholder="Fuel Total €">
+<input type="number" id="cash" placeholder="Cash Received €">
+<input type="number" id="fuel" placeholder="Total Fuel €">
+<input type="number" id="fuelCash" placeholder="Fuel Paid by Driver (Cash) €">
 
 <br>
 
@@ -79,8 +80,8 @@
 </div>
 
 <div class="box">
-<h2>Export Report</h2>
-<button onclick="exportPDF()">Download Report</button>
+<h2>Export</h2>
+<button onclick="exportPDF()">Download Invoice</button>
 <button onclick="sendWhatsApp()">WhatsApp Report</button>
 </div>
 
@@ -96,7 +97,8 @@ function addEntry() {
     platform: document.getElementById("platform").value,
     work: parseFloat(document.getElementById("work").value),
     cash: parseFloat(document.getElementById("cash").value),
-    fuel: parseFloat(document.getElementById("fuel").value)
+    fuel: parseFloat(document.getElementById("fuel").value),
+    fuelCash: parseFloat(document.getElementById("fuelCash").value) || 0
   };
 
   data.push(entry);
@@ -122,14 +124,17 @@ function calculate() {
     let driverShare = e.work * 0.5;
     let companyPay = driverShare - e.cash;
 
-    let fuelShare = (e.work / totalWork) * (totalFuel * 0.5);
+    let fuelDrivers = totalFuel * 0.5;
+    let fuelShare = (e.work / totalWork) * fuelDrivers;
 
-    let finalPay = companyPay - fuelShare;
+    let finalPay = companyPay - fuelShare - e.fuelCash;
 
     result += `
     <br>🚕 ${e.driver} (${e.car})
     <br>Work: €${e.work}
-    <br>Final Pay: €${finalPay.toFixed(2)}
+    <br>Cash: €${e.cash}
+    <br>Fuel Share: €${fuelShare.toFixed(2)}
+    <br><b>Final Pay: €${finalPay.toFixed(2)}</b>
     <br>-------------------`;
   });
 
@@ -152,13 +157,33 @@ function splitProfit() {
 }
 
 function exportPDF() {
-  window.print();
+
+  let content = document.getElementById("output").innerHTML;
+
+  let win = window.open('', '', 'height=700,width=700');
+  win.document.write('<html><head><title>Invoice</title></head><body>');
+  win.document.write('<h2>Taxi Invoice</h2>');
+  win.document.write(content);
+  win.document.write('</body></html>');
+  win.document.close();
+
+  win.print();
 }
 
 function sendWhatsApp() {
-  let text = document.getElementById("dashboard").innerText;
+
+  let text = "🚖 Taxi Weekly Report\n\n";
+
+  data.forEach(e => {
+    text += 
+    "Driver: " + e.driver +
+    "\nWork: €" + e.work +
+    "\nCash: €" + e.cash +
+    "\n-------------------\n";
+  });
+
   let url = "https://wa.me/?text=" + encodeURIComponent(text);
-  window.open(url);
+  window.open(url, "_blank");
 }
 
 </script>
