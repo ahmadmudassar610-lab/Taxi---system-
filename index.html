@@ -94,8 +94,97 @@ button { background:green; color:white; border:none; }
 
 <script>
 
+// DATA LOAD
 let data = JSON.parse(localStorage.getItem("taxiData")) || [];
 
+// SAVE
 function saveEntry() {
 
-let
+let entry = {
+driver: document.getElementById("driver").value,
+date: document.getElementById("date").value,
+
+taxiCash: Number(document.getElementById("taxiCash").value)||0,
+taxiCard: Number(document.getElementById("taxiCard").value)||0,
+
+uber: Number(document.getElementById("uber").value)||0,
+
+cabifyCash: Number(document.getElementById("cabifyCash").value)||0,
+cabifyCard: Number(document.getElementById("cabifyCard").value)||0,
+
+freeCash: Number(document.getElementById("freeCash").value)||0,
+freeCard: Number(document.getElementById("freeCard").value)||0,
+
+fuel: Number(document.getElementById("fuel").value)||0,
+fuelType: document.getElementById("fuelType").value
+};
+
+data.push(entry);
+localStorage.setItem("taxiData", JSON.stringify(data));
+
+alert("Saved ✅");
+}
+
+// TOTAL CALCULATION
+function calculate() {
+
+let total=0, cash=0, card=0;
+
+data.forEach(d=>{
+total += d.taxiCash + d.taxiCard + d.uber + d.cabifyCash + d.cabifyCard + d.freeCash + d.freeCard;
+
+cash += d.taxiCash + d.cabifyCash + d.freeCash;
+
+card += d.taxiCard + d.uber + d.cabifyCard + d.freeCard;
+});
+
+document.getElementById("result").innerHTML =
+"Total Work: €"+total+
+"<br>Cash: €"+cash+
+"<br>Card: €"+card;
+}
+
+// MONTH FILTER
+function filterMonthly(){
+
+let m = document.getElementById("monthSelect").value;
+
+let total=0, cash=0, card=0;
+
+data.forEach(d=>{
+if(!d.date) return;
+
+let dm = new Date(d.date).getMonth();
+
+if(dm == m){
+total += d.taxiCash + d.taxiCard + d.uber + d.cabifyCash + d.cabifyCard + d.freeCash + d.freeCard;
+
+cash += d.taxiCash + d.cabifyCash + d.freeCash;
+
+card += d.taxiCard + d.uber + d.cabifyCard + d.freeCard;
+}
+});
+
+document.getElementById("monthly").innerHTML =
+"Month Work: €"+total+
+"<br>Cash: €"+cash+
+"<br>Card: €"+card;
+}
+
+// DOWNLOAD
+function downloadMonthly(){
+
+let text = document.getElementById("monthly").innerText;
+
+let blob = new Blob([text], {type:"text/plain"});
+let link = document.createElement("a");
+
+link.href = URL.createObjectURL(blob);
+link.download = "monthly_report.txt";
+link.click();
+}
+
+</script>
+
+</body>
+</html>
