@@ -1,212 +1,94 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Taxi Company System</title>
-  <style>
-    body { font-family: Arial; background:#020617; color:#fff; text-align:center; }
-    input, select, button {
-      padding:10px; margin:5px; border-radius:8px; border:none;
-    }
-    button { background:#22c55e; color:white; cursor:pointer; }
-    .danger { background:red; }
-    .box { background:#0f172a; padding:20px; border-radius:15px; margin:20px; }
-  </style>
+<title>Taxi Company System</title>
+
+<style>
+body { font-family: Arial; background:#f4f4f4; padding:20px; }
+input, select, button { padding:10px; margin:5px; width:100%; }
+button { background:#22c55e; color:white; border:none; }
+.box { background:white; padding:15px; border-radius:10px; margin-top:10px; }
+</style>
+
 </head>
 
 <body>
 
-<h1>🚖 Taxi Company Software</h1>
+<h2>🚖 Taxi Company System</h2>
 
 <div class="box">
-<h2>Add Entry</h2>
+<h3>Trip Details</h3>
 
-<input type="date" id="date">
+<input id="name" placeholder="Driver Name">
+<input id="fare" type="number" placeholder="Fare Amount">
+<input id="fuel" type="number" placeholder="Fuel Cost">
 
-<select id="driver">
-  <option>Saqlain</option>
-  <option>Shujaat</option>
-  <option>Mudassar</option>
-  <option>Other</option>
+<select id="fuelType">
+<option value="Card">Company Card</option>
+<option value="Cash">Driver Cash</option>
 </select>
 
-<select id="car">
-  <option>Prius</option>
-  <option>Corolla</option>
-</select>
-
-<select id="platform">
-  <option>Taximeter</option>
-  <option>Uber</option>
-  <option>Cabify</option>
-  <option>FreeNow</option>
-</select>
-
-<br>
-
-<input type="number" id="work" placeholder="Total Work €">
-<input type="number" id="cash" placeholder="Cash Received €">
-<input type="number" id="fuel" placeholder="Total Fuel €">
-<input type="number" id="fuelCash" placeholder="Fuel Paid by Driver €">
-
-<br>
-
-<button onclick="addEntry()">Save Entry</button>
+<button onclick="calculate()">Calculate</button>
 
 </div>
 
 <div class="box">
-<h2>Filter by Driver</h2>
+<h3>Result</h3>
+<p id="result"></p>
 
-<select id="filterDriver">
-  <option value="all">All</option>
-  <option>Saqlain</option>
-  <option>Shujaat</option>
-  <option>Mudassar</option>
-  <option>Other</option>
-</select>
+<button onclick="downloadInvoice()">Download Invoice</button>
+<button onclick="sendWhatsApp()">Send to WhatsApp</button>
 
-<button onclick="calculate()">Show Data</button>
-
-<h3 id="output"></h3>
-</div>
-
-<div class="box">
-<h2>Dashboard</h2>
-<h3 id="dashboard"></h3>
-</div>
-
-<div class="box">
-<h2>Partner Profit</h2>
-
-<input type="number" id="profit" placeholder="Total Profit €">
-
-<select id="taxi">
-  <option>Prius</option>
-  <option>Corolla</option>
-</select>
-
-<button onclick="splitProfit()">Divide</button>
-<h3 id="partners"></h3>
-
-</div>
-
-<div class="box">
-<h2>Export</h2>
-<button onclick="exportPDF()">Download Invoice</button>
-<button onclick="sendWhatsApp()">WhatsApp Report</button>
-<button class="danger" onclick="clearData()">Delete All Data</button>
 </div>
 
 <script>
 
-let data = JSON.parse(localStorage.getItem("taxiData")) || [];
-
-function addEntry() {
-  let entry = {
-    date: document.getElementById("date").value,
-    driver: document.getElementById("driver").value,
-    car: document.getElementById("car").value,
-    platform: document.getElementById("platform").value,
-    work: parseFloat(document.getElementById("work").value),
-    cash: parseFloat(document.getElementById("cash").value),
-    fuel: parseFloat(document.getElementById("fuel").value),
-    fuelCash: parseFloat(document.getElementById("fuelCash").value) || 0
-  };
-
-  data.push(entry);
-  localStorage.setItem("taxiData", JSON.stringify(data));
-
-  alert("Saved!");
-}
+let finalData = "";
 
 function calculate() {
+let name = document.getElementById("name").value;
+let fare = Number(document.getElementById("fare").value);
+let fuel = Number(document.getElementById("fuel").value);
+let fuelType = document.getElementById("fuelType").value;
 
-  let filter = document.getElementById("filterDriver").value;
+let company = 0;
+let driver = 0;
 
-  let filtered = filter === "all" ? data : data.filter(e => e.driver === filter);
-
-  let totalWork = 0;
-  let totalFuel = 0;
-
-  filtered.forEach(e => {
-    totalWork += e.work;
-    totalFuel += e.fuel;
-  });
-
-  let result = "";
-
-  filtered.forEach(e => {
-
-    let driverShare = e.work * 0.5;
-    let companyPay = driverShare - e.cash;
-
-    let fuelDrivers = totalFuel * 0.5;
-    let fuelShare = (e.work / totalWork) * fuelDrivers;
-
-    let finalPay = companyPay - fuelShare - e.fuelCash;
-
-    result += `
-    <br>🚕 ${e.driver}
-    <br>Work: €${e.work}
-    <br>Cash: €${e.cash}
-    <br>Fuel Share: €${fuelShare.toFixed(2)}
-    <br><b>Final Pay: €${finalPay.toFixed(2)}</b>
-    <br>-------------------`;
-  });
-
-  document.getElementById("output").innerHTML = result;
-
-  document.getElementById("dashboard").innerHTML =
-    "Total Work: €" + totalWork +
-    "<br>Total Fuel: €" + totalFuel;
+if(fuelType === "Card") {
+    company = fare - fuel;
+    driver = 0;
+} else {
+    company = fare;
+    driver = fare - fuel;
 }
 
-function splitProfit() {
-  let profit = document.getElementById("profit").value;
-  let taxi = document.getElementById("taxi").value;
+finalData = 
+`Driver: ${name}
+Fare: ${fare}
+Fuel: ${fuel} (${fuelType})
 
-  let share = taxi == "Prius" ? profit/4 : profit/5;
+Company: ${company}
+Driver: ${driver}`;
 
-  document.getElementById("partners").innerHTML =
-    "Each Partner: €" + share.toFixed(2);
+document.getElementById("result").innerText = finalData;
 }
 
-function exportPDF() {
-
-  let content = document.getElementById("output").innerHTML;
-
-  let win = window.open('', '', 'height=700,width=700');
-  win.document.write('<html><head><title>Invoice</title></head><body>');
-  win.document.write('<h2>Taxi Invoice</h2>');
-  win.document.write(content);
-  win.document.write('</body></html>');
-  win.document.close();
-
-  win.print();
+// PDF Download
+function downloadInvoice() {
+let blob = new Blob([finalData], { type: "text/plain" });
+let link = document.createElement("a");
+link.href = URL.createObjectURL(blob);
+link.download = "invoice.txt";
+link.click();
 }
 
+// WhatsApp
 function sendWhatsApp() {
-
-  let text = "🚖 Taxi Weekly Report\n\n";
-
-  data.forEach(e => {
-    text += 
-    "Driver: " + e.driver +
-    "\nWork: €" + e.work +
-    "\nCash: €" + e.cash +
-    "\nFuel: €" + e.fuel +
-    "\n-------------------\n";
-  });
-
-  let url = "https://wa.me/?text=" + encodeURIComponent(text);
-  window.open(url, "_blank");
+let url = "https://wa.me/?text=" + encodeURIComponent(finalData);
+window.open(url, "_blank");
 }
 
-function clearData() {
-  if(confirm("Are you sure?")) {
-    localStorage.removeItem("taxiData");
-    location.reload();
-  }
-}
+</script>
 
-</
+</body>
+</html>
