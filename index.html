@@ -4,32 +4,41 @@
 <title>Taxi Company System</title>
 
 <style>
-body { font-family: Arial; background:#f4f4f4; padding:20px; }
-input, select, button { padding:10px; margin:5px; width:100%; }
+body { font-family: Arial; background:#eee; }
+input, select, button { padding:10px; margin:5px; width:95%; }
 button { background:#22c55e; color:white; border:none; }
-.box { background:white; padding:15px; border-radius:10px; margin-top:10px; }
+.box { background:white; padding:10px; margin:10px; border-radius:10px; }
 </style>
 
 </head>
 
 <body>
 
-<h2>🚖 Taxi Company System</h2>
+<h2>🚕 Taxi Company System</h2>
 
 <div class="box">
 <h3>Trip Details</h3>
 
-<input id="name" placeholder="Driver Name">
-<input id="fare" type="number" placeholder="Fare Amount">
-<input id="fuel" type="number" placeholder="Fuel Cost">
+<input type="text" id="name" placeholder="Driver Name">
+<input type="number" id="fare" placeholder="Fare Amount">
+<input type="number" id="fuel" placeholder="Fuel Cost">
 
 <select id="fuelType">
 <option value="Card">Company Card</option>
-<option value="Cash">Driver Cash</option>
+<option value="Cash">Cash</option>
+</select>
+
+<input type="date" id="date">
+
+<select id="platform">
+<option>Taximeter</option>
+<option>Taximeter Card</option>
+<option>Uber</option>
+<option>Cabify</option>
+<option>Free Now</option>
 </select>
 
 <button onclick="calculate()">Calculate</button>
-
 </div>
 
 <div class="box">
@@ -38,57 +47,86 @@ button { background:#22c55e; color:white; border:none; }
 
 <button onclick="downloadInvoice()">Download Invoice</button>
 <button onclick="sendWhatsApp()">Send to WhatsApp</button>
+</div>
 
+<div class="box">
+<h3>Report</h3>
+<p id="report"></p>
 </div>
 
 <script>
 
+let trips = JSON.parse(localStorage.getItem("trips")) || [];
 let finalData = "";
 
 function calculate() {
-let name = document.getElementById("name").value;
-let fare = Number(document.getElementById("fare").value);
-let fuel = Number(document.getElementById("fuel").value);
-let fuelType = document.getElementById("fuelType").value;
+    let name = document.getElementById("name").value;
+    let fare = Number(document.getElementById("fare").value);
+    let fuel = Number(document.getElementById("fuel").value);
+    let fuelType = document.getElementById("fuelType").value;
+    let date = document.getElementById("date").value;
+    let platform = document.getElementById("platform").value;
 
-let company = 0;
-let driver = 0;
+    let company = 0;
+    let driver = 0;
 
-if(fuelType === "Card") {
-    company = fare - fuel;
-    driver = 0;
-} else {
-    company = fare;
-    driver = fare - fuel;
-}
+    if (fuelType === "Card") {
+        company = fare - fuel;
+        driver = 0;
+    } else {
+        company = fare;
+        driver = fare - fuel;
+    }
 
-finalData = 
-`Driver: ${name}
+    finalData = `
+Driver: ${name}
 Fare: ${fare}
-Fuel: ${fuel} (${fuelType})
-
+Fuel: ${fuel}
 Company: ${company}
-Driver: ${driver}`;
+Driver Profit: ${driver}
+Date: ${date}
+Platform: ${platform}
+`;
 
-document.getElementById("result").innerText = finalData;
+    let trip = {name,fare,fuel,fuelType,date,platform,company,driver};
+    trips.push(trip);
+    localStorage.setItem("trips", JSON.stringify(trips));
+
+    document.getElementById("result").innerHTML =
+        `Driver: ${name}<br>Company: ${company}<br>Driver Profit: ${driver}`;
+
+    generateReport();
 }
 
-// PDF Download
-function downloadInvoice() {
-let blob = new Blob([finalData], { type: "text/plain" });
-let link = document.createElement("a");
-link.href = URL.createObjectURL(blob);
-link.download = "invoice.txt";
-link.click();
-}
+function generateReport() {
+    let today = new Date().toISOString().split("T")[0];
 
-// WhatsApp
-function sendWhatsApp() {
-let url = "https://wa.me/?text=" + encodeURIComponent(finalData);
-window.open(url, "_blank");
-}
+    let daily = 0, weekly = 0, monthly = 0;
 
-</script>
+    let platforms = {
+        "Taximeter": 0,
+        "Taximeter Card": 0,
+        "Uber": 0,
+        "Cabify": 0,
+        "Free Now": 0
+    };
 
-</body>
-</html>
+    trips.forEach(t => {
+        let tripDate = new Date(t.date);
+        let now = new Date();
+
+        if (t.date === today) daily += t.company;
+
+        let diff = (now - tripDate)/(1000*60*60*24);
+        if (diff <= 7) weekly += t.company;
+
+        if (tripDate.getMonth() === now.getMonth())
+            monthly += t.company;
+
+        platforms[t.platform] += t.company;
+    });
+
+    document.getElementById("report").innerHTML = `
+Daily: ${daily}<br>
+Weekly: ${weekly}<br>
+Monthly
