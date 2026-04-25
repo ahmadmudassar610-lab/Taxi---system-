@@ -1,79 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Taxi Driver System</title>
+<title>Taxi Pro System</title>
+
+<style>
+body { font-family: Arial; background:#f2f2f2; padding:10px; }
+.box { background:white; padding:10px; margin:10px 0; border-radius:8px; }
+input, select { width:100%; padding:10px; margin:5px 0; }
+button { width:100%; padding:12px; margin:5px 0; background:#28a745; color:white; border:none; font-size:16px; }
+h2 { text-align:center; }
+</style>
+
 </head>
+
 <body>
 
-<h2>Driver Entry</h2>
+<h2>🚖 Taxi Pro System</h2>
 
-<input type="number" id="fare" placeholder="Total Fare (€)">
-<input type="number" id="cash" placeholder="Cash Received (€)">
-<input type="number" id="fuel" placeholder="Fuel by Driver (€)">
+<div class="box">
+<h3>Driver & Date</h3>
 
-<br><br>
+<select id="driver">
+<option>Saqlain</option>
+<option>Mudassar</option>
+<option>Shujaat</option>
+<option>Other</option>
+</select>
 
-<button onclick="saveEntry()">Save Entry</button>
-<button onclick="generateReport()">Monthly Report</button>
+<input type="date" id="date">
+</div>
 
-<h2>Report</h2>
+<div class="box">
+<h3>Taximeter</h3>
+<input type="number" id="tmCash" placeholder="Cash">
+<input type="number" id="tmCard" placeholder="Card">
+</div>
 
-<p>Total Fare: <span id="totalFare">0</span> €</p>
-<p>Driver Share (50%): <span id="driverShare">0</span> €</p>
-<p>Cash Received: <span id="totalCash">0</span> €</p>
-<p>Fuel by Driver: <span id="totalFuel">0</span> €</p>
-<p><b>Company Will Pay: <span id="finalPay">0</span> €</b></p>
+<div class="box">
+<h3>Uber</h3>
+<input type="number" id="uber" placeholder="Total">
+</div>
 
-<script>
+<div class="box">
+<h3>Cabify</h3>
+<input type="number" id="cabCash" placeholder="Cash">
+<input type="number" id="cabCard" placeholder="Card">
+</div>
 
-let entries = [];
+<div class="box">
+<h3>Free Now</h3>
+<input type="number" id="freeCash" placeholder="Cash">
+<input type="number" id="freeCard" placeholder="Card">
+</div>
 
-function saveEntry() {
-    let fare = parseFloat(document.getElementById("fare").value) || 0;
-    let cash = parseFloat(document.getElementById("cash").value) || 0;
-    let fuel = parseFloat(document.getElementById("fuel").value) || 0;
+<div class="box">
+<h3>Fuel</h3>
+<input type="number" id="fuel" placeholder="Fuel Cost">
+<select id="fuelType">
+<option>Company Card</option>
+<option>Driver Cash</option>
+</select>
+</div>
 
-    let entry = {
-        fare: fare,
-        cash: cash,
-        fuel: fuel
-    };
+<button onclick="saveEntry()">💾 Save Entry</button>
+<button onclick="calculate()">🧮 Calculate</button>
 
-    entries.push(entry);
+<div class="box">
+<h3>Result</h3>
+<p id="result"></p>
+</div>
 
-    alert("Entry Saved ✅");
+<div class="box">
+<h3>Monthly Report</h3>
 
-    // clear inputs
-    document.getElementById("fare").value = "";
-    document.getElementById("cash").value = "";
-    document.getElementById("fuel").value = "";
-}
-
-function generateReport() {
-
-    let totalFare = 0;
-    let totalCash = 0;
-    let totalFuel = 0;
-
-    entries.forEach(e => {
-        totalFare += e.fare;
-        totalCash += e.cash;
-        totalFuel += e.fuel;
-    });
-
-    let driverShare = totalFare * 0.5;
-
-    let finalPay = driverShare - totalCash + totalFuel;
-
-    // show in UI
-    document.getElementById("totalFare").innerText = totalFare;
-    document.getElementById("driverShare").innerText = driverShare;
-    document.getElementById("totalCash").innerText = totalCash;
-    document.getElementById("totalFuel").innerText = totalFuel;
-    document.getElementById("finalPay").innerText = finalPay;
-}
-
-</script>
-
-</body>
-</html>
+<select id="month">
+<option value="01">January</option>
+<option value="02">February</option>
+<option value="03">March</option>
+<option value="04">April</option>
+<option value="05">May</option>
+<option value="06">June</option>
+<option value="07">July</option>
+<option value="08">August</option>
+<option value="09
