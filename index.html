@@ -4,11 +4,8 @@
   <title>Taxi Pro System</title>
   <style>
     body { font-family: Arial; background:#f2f2f2; padding:10px; }
-    h2 { margin-top:20px; }
     .box { background:white; padding:10px; margin:10px 0; border-radius:10px; }
-    input, select, button {
-      width:100%; padding:10px; margin:5px 0;
-    }
+    input, select, button { width:100%; padding:10px; margin:5px 0; }
     button { background:green; color:white; border:none; }
   </style>
 </head>
@@ -25,7 +22,6 @@
   <option>Shujaat</option>
   <option>Other</option>
 </select>
-
 <input type="date" id="date">
 </div>
 
@@ -61,8 +57,8 @@
 </select>
 </div>
 
-<button onclick="saveEntry()">💾 Save Entry</button>
 <button onclick="calculate()">🧮 Calculate</button>
+<button onclick="saveEntry()">💾 Save Entry</button>
 
 <div class="box">
 <h3>Result</h3>
@@ -70,19 +66,28 @@
 </div>
 
 <div class="box">
-<h3>Monthly Report</h3>
+<h3>Reports</h3>
 
 <select id="month">
   <option value="01">January</option>
   <option value="02">February</option>
   <option value="03">March</option>
   <option value="04">April</option>
+  <option value="05">May</option>
+  <option value="06">June</option>
+  <option value="07">July</option>
+  <option value="08">August</option>
+  <option value="09">September</option>
+  <option value="10">October</option>
+  <option value="11">November</option>
+  <option value="12">December</option>
 </select>
 
-<button onclick="showMonthly()">📊 Show Monthly</button>
-<button onclick="downloadMonthly()">⬇ Download</button>
+<button onclick="showMonthly()">📊 Monthly Report</button>
+<button onclick="driverReport()">👨‍✈️ Driver Report</button>
+<button onclick="downloadReport()">⬇ Download</button>
 
-<p id="monthlyResult"></p>
+<p id="report"></p>
 </div>
 
 <script>
@@ -93,15 +98,11 @@ function calculate() {
 
   let taxiCash = Number(document.getElementById("taxiCash").value) || 0;
   let taxiCard = Number(document.getElementById("taxiCard").value) || 0;
-
   let uber = Number(document.getElementById("uberTotal").value) || 0;
-
   let cabifyCash = Number(document.getElementById("cabifyCash").value) || 0;
   let cabifyCard = Number(document.getElementById("cabifyCard").value) || 0;
-
   let freeCash = Number(document.getElementById("freeCash").value) || 0;
   let freeCard = Number(document.getElementById("freeCard").value) || 0;
-
   let fuel = Number(document.getElementById("fuel").value) || 0;
   let fuelType = document.getElementById("fuelType").value;
 
@@ -110,7 +111,6 @@ function calculate() {
   let totalCard = taxiCard + uber + cabifyCard + freeCard;
 
   let driverShare = totalWork * 0.5;
-
   let companyPay = driverShare - totalCash;
 
   if (fuelType === "Driver Cash") {
@@ -128,21 +128,26 @@ function calculate() {
 function saveEntry() {
 
   let entry = {
+    driver: document.getElementById("driver").value,
     date: document.getElementById("date").value,
-    total: Number(document.getElementById("taxiCash").value) +
-           Number(document.getElementById("taxiCard").value)
+    total: Number(document.getElementById("taxiCash").value || 0)
+         + Number(document.getElementById("taxiCard").value || 0)
+         + Number(document.getElementById("uberTotal").value || 0)
+         + Number(document.getElementById("cabifyCash").value || 0)
+         + Number(document.getElementById("cabifyCard").value || 0)
+         + Number(document.getElementById("freeCash").value || 0)
+         + Number(document.getElementById("freeCard").value || 0)
   };
 
   data.push(entry);
   localStorage.setItem("taxiData", JSON.stringify(data));
 
-  alert("Saved!");
+  alert("Saved Successfully!");
 }
 
 function showMonthly() {
 
   let month = document.getElementById("month").value;
-
   let total = 0;
 
   data.forEach(e => {
@@ -151,13 +156,31 @@ function showMonthly() {
     }
   });
 
-  document.getElementById("monthlyResult").innerHTML =
-    "Month Total: €" + total;
+  document.getElementById("report").innerHTML =
+    "Monthly Total: €" + total;
 }
 
-function downloadMonthly() {
+function driverReport() {
 
-  let text = document.getElementById("monthlyResult").innerText;
+  let report = {};
+
+  data.forEach(e => {
+    if (!report[e.driver]) report[e.driver] = 0;
+    report[e.driver] += e.total;
+  });
+
+  let output = "<h4>Driver Report:</h4>";
+
+  for (let d in report) {
+    output += d + ": €" + report[d] + "<br>";
+  }
+
+  document.getElementById("report").innerHTML = output;
+}
+
+function downloadReport() {
+
+  let text = document.getElementById("report").innerText;
 
   let blob = new Blob([text], { type: "text/plain" });
   let link = document.createElement("a");
