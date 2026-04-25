@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Taxi ULTRA System</title>
+<title>Taxi FINAL BOSS</title>
 
 <style>
-body { font-family: Arial; background:#f2f2f2; padding:10px; }
-.box { background:white; padding:10px; margin:10px 0; border-radius:10px; }
+body { font-family: Arial; background:#111; color:white; padding:10px; }
+.box { background:#1c1c1c; padding:12px; margin:10px 0; border-radius:10px; }
 input, select, button { width:100%; padding:10px; margin:5px 0; }
-button { background:#222; color:white; border:none; }
+button { background:#00c853; border:none; color:white; font-weight:bold; }
 h2 { text-align:center; }
 </style>
 
@@ -15,7 +15,15 @@ h2 { text-align:center; }
 
 <body>
 
-<h2>🚖 Taxi ULTRA System</h2>
+<h2>🚖 Taxi FINAL BOSS</h2>
+
+<div class="box">
+<h3>Taxi</h3>
+<select id="taxi">
+<option>Prius 9940</option>
+<option>Corolla 3289</option>
+</select>
+</div>
 
 <div class="box">
 <h3>Driver & Date</h3>
@@ -49,11 +57,11 @@ h2 { text-align:center; }
 </div>
 
 <div class="box">
-<h3>Company Balance (for partners)</h3>
-<input id="companyBalance" placeholder="Enter total company balance">
+<h3>Company Balance</h3>
+<input id="balance" placeholder="Total Company Balance">
 </div>
 
-<button onclick="calculate()">🧮 Calculate</button>
+<button onclick="calc()">🧮 Calculate</button>
 <button onclick="save()">💾 Save</button>
 
 <div class="box">
@@ -82,6 +90,7 @@ h2 { text-align:center; }
 <button onclick="monthly()">Monthly</button>
 <button onclick="daily()">Today</button>
 <button onclick="driverReport()">Driver</button>
+<button onclick="taxiReport()">Taxi</button>
 <button onclick="partners()">Partners</button>
 <button onclick="invoice()">Invoice</button>
 
@@ -91,47 +100,43 @@ h2 { text-align:center; }
 
 <script>
 
-let db = JSON.parse(localStorage.getItem("taxi")) || [];
+let db = JSON.parse(localStorage.getItem("boss")) || [];
 
 function get(){
 
-let tmCash=+tmCash.value||0;
-let tmCard=+tmCard.value||0;
-let uberV=+uber.value||0;
-let cabC=+cabCash.value||0;
-let cabCd=+cabCard.value||0;
-let freeC=+freeCash.value||0;
-let freeCd=+freeCard.value||0;
-let fuelV=+fuel.value||0;
-let fuelTypeV=fuelType.value;
+let total =
+(+tmCash.value||0)+(+tmCard.value||0)+(+uber.value||0)+
+(+cabCash.value||0)+(+cabCard.value||0)+
+(+freeCash.value||0)+(+freeCard.value||0);
 
-let total=tmCash+tmCard+uberV+cabC+cabCd+freeC+freeCd;
-let cash=tmCash+cabC+freeC;
-let card=tmCard+uberV+cabCd+freeCd;
+let cash = (+tmCash.value||0)+(+cabCash.value||0)+(+freeCash.value||0);
+let card = (+tmCard.value||0)+(+uber.value||0)+(+cabCard.value||0)+(+freeCard.value||0);
 
-let driver50=total*0.5;
-let companyPay=driver50-cash;
+let driver50 = total * 0.5;
+let company = driver50 - cash;
 
-if(fuelTypeV==="Driver Cash"){ companyPay-=fuelV; }
+if(fuelType.value==="Driver Cash"){ company -= (+fuel.value||0); }
 
 return {
+taxi:taxi.value,
 driver:driver.value,
 date:date.value,
-total,cash,card,driver50,companyPay
+total,cash,card,driver50,company
 };
 
 }
 
-function calculate(){
+function calc(){
 
 let d=get();
 
-result.innerHTML=
+result.innerHTML =
+"Taxi: "+d.taxi+"<br>"+
 "Total: €"+d.total+"<br>"+
 "Cash: €"+d.cash+"<br>"+
 "Card: €"+d.card+"<br><br>"+
 "Driver 50%: €"+d.driver50+"<br>"+
-"Company Pay: €"+d.companyPay;
+"Company Pay: €"+d.company;
 
 }
 
@@ -139,7 +144,7 @@ function save(){
 
 let d=get();
 db.push(d);
-localStorage.setItem("taxi",JSON.stringify(db));
+localStorage.setItem("boss",JSON.stringify(db));
 alert("Saved ✅");
 
 }
@@ -152,11 +157,11 @@ let t=0,c=0;
 db.forEach(e=>{
 if(e.date && e.date.includes("-"+m+"-")){
 t+=e.total;
-c+=e.companyPay;
+c+=e.company;
 }
 });
 
-report.innerHTML="Monthly Work €"+t+"<br>Company €"+c;
+report.innerHTML="Monthly €"+t+"<br>Company €"+c;
 
 }
 
@@ -168,7 +173,7 @@ let t=0,c=0;
 db.forEach(e=>{
 if(e.date===today){
 t+=e.total;
-c+=e.companyPay;
+c+=e.company;
 }
 });
 
@@ -182,7 +187,7 @@ let map={};
 
 db.forEach(e=>{
 if(!map[e.driver]) map[e.driver]=0;
-map[e.driver]+=e.companyPay;
+map[e.driver]+=e.company;
 });
 
 let out="";
@@ -192,19 +197,29 @@ report.innerHTML=out;
 
 }
 
+function taxiReport(){
+
+let map={};
+
+db.forEach(e=>{
+if(!map[e.taxi]) map[e.taxi]=0;
+map[e.taxi]+=e.company;
+});
+
+let out="";
+for(let t in map){ out+=t+": €"+map[t]+"<br>"; }
+
+report.innerHTML=out;
+
+}
+
 function partners(){
 
-let balance=+companyBalance.value||0;
+let bal = +balance.value||0;
 
-// Prius 4 partners
-let p4=balance/4;
-
-// Corolla 5 partners
-let p5=balance/5;
-
-report.innerHTML=
-"Prius (4 partners): €"+p4+" each<br>"+
-"Corolla (5 partners): €"+p5+" each";
+report.innerHTML =
+"Prius (4): €"+(bal/4)+" each<br>"+
+"Corolla (5): €"+(bal/5)+" each";
 
 }
 
