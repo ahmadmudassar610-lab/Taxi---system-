@@ -1,30 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Taxi Pro System</title>
-
-<style>
-body { font-family: Arial; background:#f2f2f2; padding:10px; }
-.box { background:white; padding:10px; margin:10px 0; border-radius:8px; }
-input, select { width:100%; padding:10px; margin:5px 0; }
-button { width:100%; padding:12px; margin:5px 0; background:#28a745; color:white; border:none; font-size:16px; }
-h2 { text-align:center; }
-</style>
-
+  <title>Taxi Pro System</title>
+  <style>
+    body { font-family: Arial; background:#f2f2f2; padding:10px; }
+    h2 { margin-top:20px; }
+    .box { background:white; padding:10px; margin:10px 0; border-radius:10px; }
+    input, select, button {
+      width:100%; padding:10px; margin:5px 0;
+    }
+    button { background:green; color:white; border:none; }
+  </style>
 </head>
 
 <body>
 
-<h2>🚖 Taxi Pro System</h2>
+<h1>🚖 Taxi Pro System</h1>
 
 <div class="box">
 <h3>Driver & Date</h3>
-
 <select id="driver">
-<option>Saqlain</option>
-<option>Mudassar</option>
-<option>Shujaat</option>
-<option>Other</option>
+  <option>Saqlain</option>
+  <option>Mudassar</option>
+  <option>Shujaat</option>
+  <option>Other</option>
 </select>
 
 <input type="date" id="date">
@@ -32,19 +31,19 @@ h2 { text-align:center; }
 
 <div class="box">
 <h3>Taximeter</h3>
-<input type="number" id="tmCash" placeholder="Cash">
-<input type="number" id="tmCard" placeholder="Card">
+<input type="number" id="taxiCash" placeholder="Cash">
+<input type="number" id="taxiCard" placeholder="Card">
 </div>
 
 <div class="box">
 <h3>Uber</h3>
-<input type="number" id="uber" placeholder="Total">
+<input type="number" id="uberTotal" placeholder="Total">
 </div>
 
 <div class="box">
 <h3>Cabify</h3>
-<input type="number" id="cabCash" placeholder="Cash">
-<input type="number" id="cabCard" placeholder="Card">
+<input type="number" id="cabifyCash" placeholder="Cash">
+<input type="number" id="cabifyCard" placeholder="Card">
 </div>
 
 <div class="box">
@@ -55,10 +54,10 @@ h2 { text-align:center; }
 
 <div class="box">
 <h3>Fuel</h3>
-<input type="number" id="fuel" placeholder="Fuel Cost">
+<input type="number" id="fuel" placeholder="Fuel">
 <select id="fuelType">
-<option>Company Card</option>
-<option>Driver Cash</option>
+  <option>Company Card</option>
+  <option>Driver Cash</option>
 </select>
 </div>
 
@@ -74,12 +73,101 @@ h2 { text-align:center; }
 <h3>Monthly Report</h3>
 
 <select id="month">
-<option value="01">January</option>
-<option value="02">February</option>
-<option value="03">March</option>
-<option value="04">April</option>
-<option value="05">May</option>
-<option value="06">June</option>
-<option value="07">July</option>
-<option value="08">August</option>
-<option value="09
+  <option value="01">January</option>
+  <option value="02">February</option>
+  <option value="03">March</option>
+  <option value="04">April</option>
+</select>
+
+<button onclick="showMonthly()">📊 Show Monthly</button>
+<button onclick="downloadMonthly()">⬇ Download</button>
+
+<p id="monthlyResult"></p>
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("taxiData")) || [];
+
+function calculate() {
+
+  let taxiCash = Number(document.getElementById("taxiCash").value) || 0;
+  let taxiCard = Number(document.getElementById("taxiCard").value) || 0;
+
+  let uber = Number(document.getElementById("uberTotal").value) || 0;
+
+  let cabifyCash = Number(document.getElementById("cabifyCash").value) || 0;
+  let cabifyCard = Number(document.getElementById("cabifyCard").value) || 0;
+
+  let freeCash = Number(document.getElementById("freeCash").value) || 0;
+  let freeCard = Number(document.getElementById("freeCard").value) || 0;
+
+  let fuel = Number(document.getElementById("fuel").value) || 0;
+  let fuelType = document.getElementById("fuelType").value;
+
+  let totalWork = taxiCash + taxiCard + uber + cabifyCash + cabifyCard + freeCash + freeCard;
+  let totalCash = taxiCash + cabifyCash + freeCash;
+  let totalCard = taxiCard + uber + cabifyCard + freeCard;
+
+  let driverShare = totalWork * 0.5;
+
+  let companyPay = driverShare - totalCash;
+
+  if (fuelType === "Driver Cash") {
+    companyPay -= fuel;
+  }
+
+  document.getElementById("result").innerHTML =
+    "Total Work: €" + totalWork + "<br>" +
+    "Cash: €" + totalCash + "<br>" +
+    "Card: €" + totalCard + "<br><br>" +
+    "Driver Share: €" + driverShare + "<br>" +
+    "Company Pay: €" + companyPay;
+}
+
+function saveEntry() {
+
+  let entry = {
+    date: document.getElementById("date").value,
+    total: Number(document.getElementById("taxiCash").value) +
+           Number(document.getElementById("taxiCard").value)
+  };
+
+  data.push(entry);
+  localStorage.setItem("taxiData", JSON.stringify(data));
+
+  alert("Saved!");
+}
+
+function showMonthly() {
+
+  let month = document.getElementById("month").value;
+
+  let total = 0;
+
+  data.forEach(e => {
+    if (e.date && e.date.includes("-" + month + "-")) {
+      total += e.total;
+    }
+  });
+
+  document.getElementById("monthlyResult").innerHTML =
+    "Month Total: €" + total;
+}
+
+function downloadMonthly() {
+
+  let text = document.getElementById("monthlyResult").innerText;
+
+  let blob = new Blob([text], { type: "text/plain" });
+  let link = document.createElement("a");
+
+  link.href = URL.createObjectURL(blob);
+  link.download = "report.txt";
+  link.click();
+}
+
+</script>
+
+</body>
+</html>
